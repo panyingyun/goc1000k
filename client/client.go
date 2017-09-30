@@ -11,7 +11,7 @@ var quitSemaphore chan bool
 
 func main() {
 	var tcpAddr *net.TCPAddr
-	tcpAddr, _ = net.ResolveTCPAddr("tcp", "192.168.0.50:9999")
+	tcpAddr, _ = net.ResolveTCPAddr("tcp", "192.168.0.80:9999")
 	for i := 0; i < 15000; i++ {
 		conn, _ := net.DialTCP("tcp", nil, tcpAddr)
 		go onMessageRecived(conn)
