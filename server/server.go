@@ -8,13 +8,24 @@ import (
 	"time"
 )
 
-var ConnectCount int = 0
+var ConnectCounter int = 0
+var ReceiveCounter int = 0
+var SendCounter int = 0
 var sn sync.RWMutex
 
 func main() {
-	var tcpAddr *net.TCPAddr
-	tcpAddr, _ = net.ResolveTCPAddr("tcp", "0.0.0.0:9999")
-	tcpListener, _ := net.ListenTCP("tcp", tcpAddr)
+	tcpAddr, err := net.ResolveTCPAddr("tcp", "0.0.0.0:9999")
+	if err != nil {
+		handleServerError(err)
+		return
+	}
+
+	tcpListener, err := net.ListenTCP("tcp", tcpAddr)
+	if err != nil {
+		handleServerError(err)
+		return
+	}
+
 	defer tcpListener.Close()
 
 	for {
@@ -23,9 +34,8 @@ func main() {
 			continue
 		}
 		sn.Lock()
-		ConnectCount++
-		fmt.Println("ConnectCount = ", ConnectCount)
-		fmt.Println("connected : " + tcpConn.RemoteAddr().String())
+		ConnectCounter++
+		fmt.Printf("Connect [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, tcpConn.RemoteAddr().String())
 		sn.Unlock()
 
 		go handleMessage(tcpConn)
@@ -37,9 +47,8 @@ func handleMessage(conn *net.TCPConn) {
 	ipStr := conn.RemoteAddr().String()
 	defer func() {
 		sn.Lock()
-		ConnectCount--
-		fmt.Println("ConnectCount = ", ConnectCount)
-		fmt.Println("disconnected :" + ipStr)
+		ConnectCounter--
+		fmt.Printf("Connect [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, ipStr)
 		conn.Close()
 		sn.Unlock()
 	}()
@@ -50,9 +59,21 @@ func handleMessage(conn *net.TCPConn) {
 		if err != nil {
 			return
 		}
+		sn.Lock()
+		ReceiveCounter++
+		sn.Unlock()
 		//fmt.Println(message)
 		msg := time.Now().String() + "\n"
 		b := []byte(msg)
 		conn.Write(b)
+		sn.Lock()
+		SendCounter++
+		sn.Unlock()
+		fmt.Printf("Connect [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, ipStr)
 	}
+}
+
+func handleServerError(err error) {
+	fmt.Println("Server Error:", err)
+	fmt.Printf("Connect [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter)
 }
