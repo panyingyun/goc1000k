@@ -1,0 +1,13 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "z0TCcB+cPeQX8+jn7HvUDeoMDS8=",
+			"path": "github.com/urfave/cli",
+			"revision": "3eb41f1bb122ac7535cc7b32db6b78b541879726",
+			"revisionTime": "2016-10-30T01:45:05Z"
+		}
+	],
+	"rootPath": "github.com/panyingyun/goc1000k/mserver"
+}
