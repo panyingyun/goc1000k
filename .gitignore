@@ -3,6 +3,10 @@
 *.dll
 *.so
 *.dylib
+mserver
+mclient
+server
+client
 
 # Test binary, build with `go test -c`
 *.test

@@ -81,7 +81,7 @@ func startServer(port int) {
 			continue
 		}
 		atomic.AddInt64(&ConnectCounter, 1)
-		fmt.Printf("Connect [%v] [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, runtime.NumGoroutine(), tcpConn.RemoteAddr().String())
+		printCounter()
 		go handleMessage(tcpConn)
 	}
 }
@@ -90,7 +90,7 @@ func handleMessage(conn *net.TCPConn) {
 	ipStr := conn.RemoteAddr().String()
 	defer func() {
 		atomic.AddInt64(&ConnectCounter, -1)
-		fmt.Printf("Connect [%v] [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, runtime.NumGoroutine(), ipStr)
+		printCounterAndIP(ipStr)
 		conn.Close()
 	}()
 	reader := bufio.NewReader(conn)
@@ -106,11 +106,27 @@ func handleMessage(conn *net.TCPConn) {
 		b := []byte(msg)
 		conn.Write(b)
 		atomic.AddInt64(&SendCounter, 1)
-		fmt.Printf("Connect [%v] [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, runtime.NumGoroutine(), ipStr)
+		printCounter()
 	}
 }
 
 func handleServerError(err error) {
 	fmt.Println("Server Error:", err)
-	fmt.Printf("Connect [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, runtime.NumGoroutine())
+	printCounter()
+}
+
+func printCounter() {
+	RConnectCounter := atomic.LoadInt64(&ConnectCounter)
+	RReceiveCounter := atomic.LoadInt64(&ReceiveCounter)
+	RSendCounter := atomic.LoadInt64(&SendCounter)
+	RGoroutine := runtime.NumGoroutine()
+	fmt.Printf("Connect [%v] [%v] [%v] [%v]\n", RConnectCounter, RReceiveCounter, RSendCounter, RGoroutine)
+}
+
+func printCounterAndIP(ip string) {
+	RConnectCounter := atomic.LoadInt64(&ConnectCounter)
+	RReceiveCounter := atomic.LoadInt64(&ReceiveCounter)
+	RSendCounter := atomic.LoadInt64(&SendCounter)
+	RGoroutine := runtime.NumGoroutine()
+	fmt.Printf("Connect [%v] [%v] [%v] [%v] [%v]\n", RConnectCounter, RReceiveCounter, RSendCounter, RGoroutine, ip)
 }
