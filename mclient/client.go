@@ -23,6 +23,7 @@ func run(c *cli.Context) error {
 		server := fmt.Sprintf("%v:%v", ipaddr, port+i)
 		fmt.Printf("Server Addr: [%v]\n", server)
 		go connectToServer(server, connectnum)
+		time.Sleep(time.Second)
 	}
 	//quit when receive end signal
 	sigChan := make(chan os.Signal)
@@ -73,7 +74,7 @@ func connectToServer(server string, connectnum int) {
 	for i := 0; i < connectnum; i++ {
 		conn, _ := net.DialTCP("tcp", nil, tcpAddr)
 		go onMessageRecived(conn)
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 

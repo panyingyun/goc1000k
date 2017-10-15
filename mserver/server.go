@@ -81,7 +81,7 @@ func startServer(port int) {
 			continue
 		}
 		atomic.AddInt64(&ConnectCounter, 1)
-		printCounter()
+		printCounterAndIP(tcpConn.RemoteAddr().String())
 		go handleMessage(tcpConn)
 	}
 }
@@ -106,7 +106,7 @@ func handleMessage(conn *net.TCPConn) {
 		b := []byte(msg)
 		conn.Write(b)
 		atomic.AddInt64(&SendCounter, 1)
-		printCounter()
+		printCounterAndIP(ipStr)
 	}
 }
 
