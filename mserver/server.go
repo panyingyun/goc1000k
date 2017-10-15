@@ -7,17 +7,16 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
 	"github.com/urfave/cli"
 )
 
-var ConnectCounter int = 0
-var ReceiveCounter int = 0
-var SendCounter int = 0
-var sn sync.RWMutex
+var ConnectCounter int64 = 0
+var ReceiveCounter int64 = 0
+var SendCounter int64 = 0
 
 func run(c *cli.Context) error {
 	port := c.Int("port")
@@ -81,11 +80,8 @@ func startServer(port int) {
 		if err != nil {
 			continue
 		}
-		sn.Lock()
-		ConnectCounter++
+		atomic.AddInt64(&ConnectCounter, 1)
 		fmt.Printf("Connect [%v] [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, runtime.NumGoroutine(), tcpConn.RemoteAddr().String())
-		sn.Unlock()
-
 		go handleMessage(tcpConn)
 	}
 }
@@ -93,11 +89,9 @@ func startServer(port int) {
 func handleMessage(conn *net.TCPConn) {
 	ipStr := conn.RemoteAddr().String()
 	defer func() {
-		sn.Lock()
-		ConnectCounter--
+		atomic.AddInt64(&ConnectCounter, -1)
 		fmt.Printf("Connect [%v] [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, runtime.NumGoroutine(), ipStr)
 		conn.Close()
-		sn.Unlock()
 	}()
 	reader := bufio.NewReader(conn)
 
@@ -106,16 +100,12 @@ func handleMessage(conn *net.TCPConn) {
 		if err != nil {
 			return
 		}
-		sn.Lock()
-		ReceiveCounter++
-		sn.Unlock()
+		atomic.AddInt64(&ReceiveCounter, 1)
 		//fmt.Println(message)
 		msg := time.Now().String() + "\n"
 		b := []byte(msg)
 		conn.Write(b)
-		sn.Lock()
-		SendCounter++
-		sn.Unlock()
+		atomic.AddInt64(&SendCounter, 1)
 		fmt.Printf("Connect [%v] [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, runtime.NumGoroutine(), ipStr)
 	}
 }
