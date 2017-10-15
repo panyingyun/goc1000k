@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"fmt"
 	"net"
+	"runtime"
 	"time"
 )
 
 var quitSemaphore chan bool
 
 func main() {
-	tcpAddr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9999")
+	tcpAddr, _ := net.ResolveTCPAddr("tcp", "121.42.35.23:10000")
 	for i := 0; i < 1000; i++ {
 		conn, _ := net.DialTCP("tcp", nil, tcpAddr)
 		go onMessageRecived(conn)
@@ -34,7 +35,7 @@ func onMessageRecived(conn *net.TCPConn) {
 			quitSemaphore <- true
 			break
 		}
-		fmt.Printf("Connect [%v]\n", conn.LocalAddr().String())
+		fmt.Printf("Connect [%v] [%v]\n", conn.LocalAddr().String(), runtime.NumGoroutine())
 		time.Sleep(60 * time.Second)
 		b := []byte(msg)
 		conn.Write(b)
