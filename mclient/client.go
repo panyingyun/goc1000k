@@ -73,7 +73,7 @@ func connectToServer(server string, connectnum int) {
 	for i := 0; i < connectnum; i++ {
 		conn, _ := net.DialTCP("tcp", nil, tcpAddr)
 		go onMessageRecived(conn)
-		time.Sleep(200 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 	}
 }
 
