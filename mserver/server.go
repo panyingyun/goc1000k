@@ -24,6 +24,7 @@ func run(c *cli.Context) error {
 	n := c.Int("number")
 	for i := 0; i < n; i++ {
 		go startServer(port + i)
+		time.Sleep(10 * time.Millisecond)
 	}
 	//quit when receive end signal
 	sigChan := make(chan os.Signal)
