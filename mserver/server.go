@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"runtime"
 	"sync"
 	"syscall"
 	"time"
@@ -37,13 +38,13 @@ func main() {
 	app.Name = "c1000k-server"
 	app.Usage = "c1000k-server"
 	app.Copyright = "panyingyun@gmail.com"
-	app.Version = "0.1.0"
+	app.Version = "0.1.1"
 	app.Action = run
 	app.Flags = []cli.Flag{
 		cli.IntFlag{
 			Name:   "port,p",
 			Usage:  "Set Server start port here",
-			Value:  9999,
+			Value:  10000,
 			EnvVar: "PORT",
 		},
 		cli.IntFlag{
@@ -81,7 +82,7 @@ func startServer(port int) {
 		}
 		sn.Lock()
 		ConnectCounter++
-		fmt.Printf("Connect [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, tcpConn.RemoteAddr().String())
+		fmt.Printf("Connect [%v] [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, runtime.NumGoroutine(), tcpConn.RemoteAddr().String())
 		sn.Unlock()
 
 		go handleMessage(tcpConn)
@@ -93,7 +94,7 @@ func handleMessage(conn *net.TCPConn) {
 	defer func() {
 		sn.Lock()
 		ConnectCounter--
-		fmt.Printf("Connect [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, ipStr)
+		fmt.Printf("Connect [%v] [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, runtime.NumGoroutine(), ipStr)
 		conn.Close()
 		sn.Unlock()
 	}()
@@ -114,11 +115,11 @@ func handleMessage(conn *net.TCPConn) {
 		sn.Lock()
 		SendCounter++
 		sn.Unlock()
-		fmt.Printf("Connect [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, ipStr)
+		fmt.Printf("Connect [%v] [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, runtime.NumGoroutine(), ipStr)
 	}
 }
 
 func handleServerError(err error) {
 	fmt.Println("Server Error:", err)
-	fmt.Printf("Connect [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter)
+	fmt.Printf("Connect [%v] [%v] [%v] [%v]\n", ConnectCounter, ReceiveCounter, SendCounter, runtime.NumGoroutine())
 }
