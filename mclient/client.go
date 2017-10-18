@@ -7,11 +7,14 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"sync"
 	"syscall"
 	"time"
 
 	"github.com/urfave/cli"
 )
+
+var wg sync.WaitGroup
 
 func run(c *cli.Context) error {
 	ipaddr := c.String("ipaddr")
@@ -25,6 +28,7 @@ func run(c *cli.Context) error {
 		go connectToServer(server, connectnum)
 		time.Sleep(time.Second)
 	}
+	wg.Wait()
 	//quit when receive end signal
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
@@ -83,6 +87,8 @@ func onMessageRecived(conn *net.TCPConn) {
 		fmt.Println("connected error!!!")
 		return
 	}
+	wg.Add(1)
+	defer wg.Done()
 	b := []byte("time\n")
 	conn.Write(b)
 	reader := bufio.NewReader(conn)
