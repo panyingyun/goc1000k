@@ -90,6 +90,7 @@ func onMessageRecived(conn *net.TCPConn) {
 		msg, err := reader.ReadString('\n')
 		if err != nil {
 			conn.Close()
+			time.Sleep(100 * time.Millisecond)
 			break
 		}
 		fmt.Printf("Connect [%v] [%v]\n", conn.LocalAddr().String(), runtime.NumGoroutine())
